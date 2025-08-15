@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VSCode Ayrinn</title>
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: #1e1e1e;
+        color: white;
+        font-family: sans-serif;
+    }
+    header {
+        background: #252526;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    header input {
+        flex: 1;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+        padding: 6px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    /* Tab Bar */
+    #tabbar {
+        background: #2d2d2d;
+        display: flex;
+        border-bottom: 1px solid #444;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .tab {
+        padding: 8px 14px;
+        cursor: pointer;
+        color: #ccc;
+        border-right: 1px solid #444;
+        background: #2d2d2d;
+        font-size: 14px;
+    }
+    .tab.active {
+        background: #1e1e1e;
+        color: white;
+        border-bottom: 2px solid #007acc;
+    }
+    #runbar {
+        background: #252526;
+        padding: 5px;
+        border-bottom: 1px solid #444;
+        text-align: right;
+    }
+    #runbar button {
+        background: #007acc;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    #editor {
+        flex: 1;
+        min-height: 0;
+    }
+    #output {
+        background: #1e1e1e;
+        border: 1px solid white;
+        padding: 8px;
+        font-family: monospace;
+        font-size: 14px;
+        height: 150px;
+        overflow: auto;
+        display: none;
+        margin: 5px;
+    }
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: white;
+    }
+    nav {
+        background: #252526;
+        padding: 8px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid #444;
+    }
+    nav button, nav select {
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    nav button:hover {
+        background: #444;
+        cursor: pointer;
+    }
+#navbar {
+    height: 40px;
+    background: #1e1e1e;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #333;
+    justify-content: space-between;
+}
+
+#navbar .brand {
+    font-size: 14px;
+    color: #fff;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#hamburger {
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+}
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background: #252526;
+    transition: left 0.3s ease;
+    padding-top: 20px;
+    z-index: 100;
+    border-right: 2px solid #444; /* border samping */
+    box-shadow: 2px 0 10px rgba(0,0,0,0.4);
+}
+
+#sidebar h2 {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#sidebar .ip-info {
+    color: #aaa;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: monospace;
+}
+
+#sidebar hr {
+    border: none;
+    height: 1px;
+    background: #444;
+    margin: 5px 0 15px;
+}
+
+#sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#sidebar a:hover {
+    background: #333;
+}
+
+#sidebar img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+</head>
+<body>
+<div id="navbar">
+    <span class="brand">AyrinnCode</span>
+    <div id="hamburger" onclick="toggleSidebar()">
+        ☰
+    </div>
+</div>
+<div id="sidebar">
+    <h2>AyrinnCode</h2>
+    <div class="ip-info">IP: <span id="my-ip">Loading...</span></div>
+    <hr>
+   <a href="https://github.com/NekomonHub" target="_blank">
+        <img src="github.png" alt="GitHub" />
+        GitHub
+    </a>
+    <a href="https://npmjs.com/~nekoneko" target="_blank">
+         <img src="npmjs.png" alt="npmjs" />
+         NpmJS
+     </a>
+   <a href="https://wa.me/6285954685828" target="_blank">
+        <img src="wa.png" alt="WhatsApp" />
+        WhatsApp
+    </a>
+   <a href="https://www.youtube.com/@AyrinnCH17" target="_blank">
+        <img src="yt.png" alt="Yt" />
+        YouTube
+    </a>
+</div>
+<div id="tabbar"></div>
+<div id="runbar"><button onclick="runCode()">Run</button></div>
+<div id="editor"></div>
+<div id="output"></div>
+<nav>
+    <button onclick="newFile()">New File</button>
+    <select id="language">
+        <option value="javascript">JS</option>
+        <option value="python">Python</option>
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="json">JSON</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+        <option value="php">PHP</option>
+    </select>
+    <button onclick="downloadFile()">Download</button>
+</nav>
+<script>
+let editor;
+let files = [{ name: "untitled.js", lang: "javascript", content: "// Start coding here..." }];
+let activeIndex = 0;
+
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }});
+require(["vs/editor/editor.main"], function () {
+    editor = monaco.editor.create(document.getElementById('editor'), {
+        value: files[0].content,
+        language: files[0].lang,
+        theme: "vs-dark",
+        fontSize: 16,
+        wordWrap: "on",
+        minimap: { enabled: false },
+        automaticLayout: true
+    });
+    updateTabBar();
+
+    document.getElementById("language").addEventListener("change", function() {
+        files[activeIndex].lang = this.value;
+        monaco.editor.setModelLanguage(editor.getModel(), this.value);
+    });
+
+    editor.onDidChangeModelContent(() => {
+        files[activeIndex].content = editor.getValue();
+    });
+});
+
+function getLanguageFromExtension(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const map = {
+        js: "javascript",
+        html: "html",
+        css: "css",
+        json: "json",
+        py: "python",
+        php: "php",
+        c: "c",
+        h: "c",
+        cpp: "cpp",
+        java: "java",
+        ts: "typescript",
+        md: "markdown",
+        txt: "plaintext"
+    };
+    return map[ext] || "plaintext";
+}
+
+function updateTabBar() {
+    const bar = document.getElementById("tabbar");
+    bar.innerHTML = "";
+    files.forEach((file, index) => {
+        const tab = document.createElement("div");
+        tab.className = "tab" + (index === activeIndex ? " active" : "");
+        tab.textContent = file.name;
+        tab.onclick = () => switchFile(index);
+        bar.appendChild(tab);
+    });
+    document.getElementById("filename").value = files[activeIndex].name;
+    document.getElementById("language").value = files[activeIndex].lang;
+}
+
+function switchFile(index) {
+    activeIndex = index;
+    editor.setValue(files[index].content);
+    const lang = getLanguageFromExtension(files[index].name);
+    files[index].lang = lang;
+    monaco.editor.setModelLanguage(editor.getModel(), lang);
+    updateTabBar();
+}
+
+function newFile() {
+    const name = prompt("File name:", "untitled" + (files.length+1) + ".js");
+    if (!name) return;
+    const lang = getLanguageFromExtension(name);
+    files.push({ name, lang, content: "" });
+    activeIndex = files.length - 1;
+    editor.setValue("");
+    monaco.editor.setModelLanguage(editor.getModel(), lang);
+    updateTabBar();
+}
+
+function downloadFile() {
+    const filename = files[activeIndex].name;
+    const content = files[activeIndex].content;
+    const blob = new Blob([content], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function runCode() {
+    const lang = files[activeIndex].lang;
+    const code = files[activeIndex].content;
+    const outputDiv = document.getElementById("output");
+    outputDiv.style.display = "block";
+    outputDiv.innerHTML = "";
+
+    if (lang === "html") {
+        const iframe = document.createElement("iframe");
+        outputDiv.appendChild(iframe);
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(code);
+        doc.close();
+    }
+    else if (lang === "javascript") {
+        let logs = [];
+        const oldLog = console.log;
+        console.log = function(...args) {
+            logs.push(args.join(" "));
+            oldLog.apply(console, args);
+        };
+        try {
+            eval(code);
+        } catch (e) {
+            logs.push("Error: " + e.message);
+        }
+        console.log = oldLog;
+        outputDiv.textContent = logs.join("\n") || "(No output)";
+    }
+    else {
+        outputDiv.textContent = "Execution not supported for this language.";
+    }
+}
+
+document.addEventListener("click", function(e) {
+    const outputDiv = document.getElementById("output");
+    if (!outputDiv.contains(e.target) && e.target.tagName !== "BUTTON") {
+        outputDiv.style.display = "none";
+    }
+});
+
+
+let sidebarOpen = false;
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+
+    if (sidebarOpen) {
+        sidebar.style.left = '-250px';
+        hamburger.innerHTML = '☰';
+    } else {
+        sidebar.style.left = '0';
+        hamburger.innerHTML = '✖';
+    }
+    sidebarOpen = !sidebarOpen;
+}
+
+fetch('https://api.ipify.org?format=json')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('my-ip').textContent = data.ip;
+    })
+    .catch(() => {
+        document.getElementById('my-ip').textContent = 'Error';
+    });
+</script></body></html>
